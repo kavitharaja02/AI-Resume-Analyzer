@@ -1,0 +1,36 @@
+import streamlit as st
+import PyPDF2
+from skill_database import skills
+
+def extract_text(pdf_file):
+    pdf_reader = PyPDF2.PdfReader(pdf_file)
+    text = ""
+    for page in pdf_reader.pages:
+        text += page.extract_text()
+    return text.lower()
+
+def analyze_resume(text):
+    found_skills = []
+    for skill in skills:
+        if skill in text:
+            found_skills.append(skill)
+    score = int((len(found_skills) / len(skills)) * 100)
+    return found_skills, score
+
+st.title("🚀 AI Resume Analyzer")
+
+uploaded_file = st.file_uploader("Upload Resume (PDF)", type=["pdf"])
+
+if uploaded_file is not None:
+    resume_text = extract_text(uploaded_file)
+    found_skills, score = analyze_resume(resume_text)
+
+    st.subheader("📊 Resume Score")
+    st.progress(score)
+
+    st.subheader("✅ Skills Found")
+    st.write(found_skills)
+
+    st.subheader("💡 Suggestions")
+    missing = [skill for skill in skills if skill not in found_skills]
+    st.write("Consider adding:", missing[:5])
